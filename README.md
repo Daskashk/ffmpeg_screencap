@@ -14,7 +14,7 @@ Para utilizar este script, debes:
 - Copiar el archivo ffmpeg_screencap.py en un directorio y hacerlo ejecutable.
 
 ## Uso
-Para utilizar el script, simplemente ejecuta el comando python ffmpeg_screencap.py en la terminal. El script te pedirá que selecciones algunas opciones de configuración, como la resolución, framerate, archivo de salida, codec, calidad, tasa de bits de video y audio, etc.
+Para utilizar el script, simplemente ejecuta el comando `python ffmpeg_screencap.py` en la terminal. El script te pedirá que selecciones algunas opciones de configuración, como la resolución, framerate, archivo de salida, codec, calidad, tasa de bits de video y audio, etc.
 
 Los parámetros por defecto son los siguientes:
 
@@ -33,20 +33,20 @@ Los parámetros por defecto son los siguientes:
 ## Instalación de ffmpeg
  Puedes instalar ffmpeg en las siguientes distribuciones utilizando los siguientes comandos como root:
 
-   - Ubuntu/Debian: apt install ffmpeg
-   - Fedora/CentOS: dnf install ffmpeg
-   - Arch Linux: pacman -S ffmpeg
-   - OpenSUSE: zypper install ffmpeg
-   - Gentoo: emerge ffmpeg
-   - Void Linux: xbps-install -S ffmpeg
-   - Slackware: slackpkg install ffmpeg
-   - Oracle Linux: yum install ffmpeg    
-   - Solus: eopkg install ffmpeg
-   - Alpine Linux: apk add ffmpeg
-   - FreeBSD: pkg install ffmpeg
-   - OpenBSD: pkg_add ffmpeg
-   - Mageia: urpmi ffmpeg
-   - PCLinuxOS: apt-get install ffmpeg
+   - Ubuntu/Debian: `apt install ffmpeg`
+   - Fedora/CentOS: `dnf install ffmpeg`
+   - Arch Linux: `pacman -S ffmpeg`
+   - OpenSUSE: `zypper install ffmpeg`
+   - Gentoo: `emerge ffmpeg`
+   - Void Linux: `xbps-install -S ffmpeg`
+   - Slackware: `slackpkg install ffmpeg`
+   - Oracle Linux: `yum install ffmpeg`    
+   - Solus: `eopkg install ffmpeg`
+   - Alpine Linux: `apk add ffmpeg`
+   - FreeBSD: `pkg install ffmpeg`
+   - OpenBSD: `pkg_add ffmpeg`
+   - Mageia: `urpmi ffmpeg`
+   - PCLinuxOS: `apt-get install ffmpeg`
    - OpenMandriva: `dnf install ffmpeg`
 
  Para obtener más información sobre ffmpeg, visita su [página web](https://ffmpeg.org/). 

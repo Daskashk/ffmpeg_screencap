@@ -98,15 +98,10 @@ def get_crf(calidad):
 # Función para obtener el servidor de pantalla
 def get_server_type():
     # Detección del servidor de pantalla
-    # if subprocess.run(["which", "xrandr"], stdout=subprocess.DEVNULL).returncode == 0:
-    if check_path("xrandr"):
-        return "x11"
-    # elif subprocess.run(["which", "wlr-randr"], stdout=subprocess.DEVNULL).returncode == 0:
-    elif check_path("wlr-randr"):
-        return "wayland"
-    else:
-        print("No se detectó servidor de pantalla.")
+    server = os.getenv("XDG_SESSION_TYPE")
+    if not server:
         return None
+    return server
 
 
 # Función para obtener la resolución de la pantalla

@@ -56,24 +56,36 @@ def grabar_pantalla(
         if server_type == "x11":
             comando = f"ffmpeg -f x11grab -framerate {framerate} -video_size {resolucion} -i :0.0"
         elif server_type == "wayland":
-            comando = f"ffmpeg -f wayland -framerate {framerate} -video_size {resolucion} -i wayland"
+            # comando = f"ffmpeg -f wayland -framerate {framerate} -video_size {resolucion} -i wayland"
+            comando = (
+                f"wf-recorder --framerate {framerate} --geometry '0,0 {resolucion}'"
+            )
+        else:
+            raise Exception("Servidor de pantalla no soportado.")
 
-        if audio or microfono:
+        if (audio or microfono) and not server_type == "wayland":
+            audio_codec = f" -c:a {codec_audio} -b:a {tasa_bits_audio}k"
             if check_path("pipewire"):
-                comando += f" -f pipewire-0 -i default"
+                comando += " -f pipewire-0 -i default" + audio_codec
             elif check_path("pulseaudio"):
-                comando += f" -f pulse -i default"
+                comando += " -f pulse -i default" + audio_codec
             else:
                 print(
                     "No se detectó servidor de audio. La grabación de audio no está disponible."
                 )
                 audio = False
                 microfono = False
+        elif (audio or microfono) and server_type == "wayland":
+            comando += "-a"
 
-        comando += f" -c:v {codec} -crf {get_crf(calidad)} -b:v {tasa_bits_video}k"
-        if audio or microfono:
-            comando += f" -c:a {codec_audio} -b:a {tasa_bits_audio}k"
-        comando += f" -preset ultrafast -tune zerolatency {archivo_salida}"
+        if server_type == "x11":
+            comando += f" -c:v {codec} -crf {get_crf(calidad)} -b:v {tasa_bits_video}k"
+            comando += f" -preset ultrafast -tune zerolatency {archivo_salida}"
+        elif server_type == "wayland":
+            comando += f" -c {codec} -p crf={get_crf(calidad)} -p b={tasa_bits_video}K"
+            comando += f" -f {archivo_salida}"
+        # if audio or microfono:
+        # comando += f" -c:a {codec_audio} -b:a {tasa_bits_audio}k"
 
         # Ejecución del comando de grabación
         subprocess.run(comando, shell=True, check=True)

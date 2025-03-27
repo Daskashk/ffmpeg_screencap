@@ -3,7 +3,7 @@ import subprocess
 import os
 
 # Función para grabar la pantalla
-def grabar_pantalla(resolucion, framerate, archivo_salida, audio, codec, calidad, tasa_bits_video, tasa_bits_audio, codec_audio):
+def grabar_pantalla(resolucion, framerate, archivo_salida, audio, microfono, codec, calidad, tasa_bits_video, tasa_bits_audio, tasa_bits_microfono, codec_audio, codec_microfono, server_type):
     try:
         # Configuración de grabación
         print("\nConfiguración de grabación:")
@@ -13,11 +13,14 @@ def grabar_pantalla(resolucion, framerate, archivo_salida, audio, codec, calidad
             "Tasa de frames": framerate,
             "Archivo de salida": archivo_salida,
             "Incluir audio": "Sí" if audio else "No",
+            "Incluir microfono": "Sí" if microfono else "No",
             "Codec de video": codec,
             "Calidad de video": calidad,
             "Tasa de bits de video": tasa_bits_video,
             "Tasa de bits de audio": tasa_bits_audio,
-            "Codec de audio": codec_audio
+            "Tasa de bits de microfono": tasa_bits_microfono,
+            "Codec de audio": codec_audio,
+            "Codec de microfono": codec_microfono
         }
         for key, value in config.items():
             print(f"{key}: {value}")
@@ -25,9 +28,12 @@ def grabar_pantalla(resolucion, framerate, archivo_salida, audio, codec, calidad
         print("Presione Ctrl+C para detener la grabación...\n")
 
         # Construcción del comando de grabación
-        comando = f"ffmpeg -f x11grab -framerate {framerate} -video_size {resolucion} -i :0.0"
-        if audio:
-            # Detección del servidor de audio
+        if server_type == "x11":
+            comando = f"ffmpeg -f x11grab -framerate {framerate} -video_size {resolucion} -i :0.0"
+        elif server_type == "wayland":
+            comando = f"ffmpeg -f wayland -framerate {framerate} -video_size {resolucion} -i wayland"
+
+        if audio or microfono:
             if subprocess.run(["which", "pipewire"], stdout=subprocess.DEVNULL).returncode == 0:
                 comando += f" -f pipewire-0 -i default"
             elif subprocess.run(["which", "pulseaudio"], stdout=subprocess.DEVNULL).returncode == 0:
@@ -35,9 +41,11 @@ def grabar_pantalla(resolucion, framerate, archivo_salida, audio, codec, calidad
             else:
                 print("No se detectó servidor de audio. La grabación de audio no está disponible.")
                 audio = False
-        if audio:
-            comando += f" -c:a {codec_audio} -b:a {tasa_bits_audio}k"
+                microfono = False
+
         comando += f" -c:v {codec} -crf {get_crf(calidad)} -b:v {tasa_bits_video}k"
+        if audio or microfono:
+            comando += f" -c:a {codec_audio} -b:a {tasa_bits_audio}k"
         comando += f" -preset ultrafast -tune zerolatency {archivo_salida}"
 
         # Ejecución del comando de grabación
@@ -60,15 +68,35 @@ def get_crf(calidad):
     }
     return calidad_crf.get(calidad, 23)
 
+# Función para obtener el servidor de pantalla
+def get_server_type():
+    # Detección del servidor de pantalla
+    if subprocess.run(["which", "xrandr"], stdout=subprocess.DEVNULL).returncode == 0:
+        return "x11"
+    elif subprocess.run(["which", "wlr-randr"], stdout=subprocess.DEVNULL).returncode == 0:
+        return "wayland"
+    else:
+        print("No se detectó servidor de pantalla.")
+        return None
+
 # Función para obtener la resolución de la pantalla
-def get_monitor_resolution():
-    # Obtención de la resolución de la pantalla utilizando xrandr
-    output = subprocess.check_output(["xrandr", "-q", "-d", ":0"])
-    lines = output.decode("utf-8").splitlines()
-    for line in lines:
-        if "*" in line:
-            resolution = line.split()[0]
-            return resolution
+def get_monitor_resolution(server_type):
+    # Obtención de la resolución de la pantalla
+    if server_type == "x11":
+        output = subprocess.check_output(["xrandr", "-q", "-d", ":0"])
+        lines = output.decode("utf-8").splitlines()
+        for line in lines:
+            if "*" in line:
+                resolution = line.split()[0]
+                return resolution
+    elif server_type == "wayland":
+        output = subprocess.check_output(["wlr-randr", "--list-monitors"])
+        lines = output.decode("utf-8").splitlines()
+        for line in lines:
+            if "current_mode" in line:
+                resolution = line.split()[5]
+                return resolution
+    return None
 
 # Función para guardar la configuración
 def save_config(config, filename):
@@ -101,48 +129,82 @@ def main():
     print("---------------------------")
     opcion = input("Ingrese su opción: ")
 
+    server_type = get_server_type()
+    if server_type is None:
+        print("No se detectó servidor de pantalla.")
+        return
+
+    resolucion = get_monitor_resolution(server_type)
+
     if opcion == "1":
         # Configuración personalizada
         print("\nConfiguración personalizada:")
         print("---------------------------")
-        resolucion = input("Ingrese la resolución de la pantalla (por ejemplo, 1920x1080): ")
-        while not resolucion:
-            resolucion = input("La resolución no puede estar vacía. Ingrese la resolución de la pantalla (por ejemplo, 1920x1080): ")
-        framerate = int(input("Ingrese la tasa de frames por segundo (por ejemplo, 60): "))
-        while framerate <= 0:
-            framerate = int(input("La tasa de frames debe ser un número positivo. Ingrese la tasa de frames por segundo (por ejemplo, 60): "))
-        archivo_salida = input("Ingrese el nombre del archivo de salida (por ejemplo, output.mp4): ")
-        while not archivo_salida:
-            archivo_salida = input("El nombre del archivo de salida no puede estar vacío. Ingrese el nombre del archivo de salida (por ejemplo, output.mp4): ")
-        codec = input("Ingrese el codec de video (por ejemplo, libx264): ")
-        while not codec:
-            codec = input("El codec de video no puede estar vacío. Ingrese el codec de video (por ejemplo, libx264): ")
-        calidad = input("Ingrese la calidad de video (alta, media o baja): ")
-        while calidad not in ["alta", "media", "baja"]:
-            calidad = input("La calidad de video debe ser alta, media o baja. Ingrese la calidad de video: ")
-        tasa_bits_video = int(input("Ingrese la tasa de bits de video (por ejemplo, 5000): "))
-        while tasa_bits_video <= 0:
-            tasa_bits_video = int(input("La tasa de bits de video debe ser un número positivo. Ingrese la tasa de bits de video (por ejemplo, 5000): "))
+        input_resolucion = input(f"Ingrese la resolución de la pantalla ({resolucion}): ")
+        if input_resolucion:
+            resolucion = input_resolucion
+        framerate = input("Ingrese la tasa de frames por segundo (60): ")
+        if not framerate:
+            framerate = 60
+        else:
+            framerate = int(framerate)
+        archivo_salida = input("Ingrese el nombre del archivo de salida (output.mp4): ")
+        if not archivo_salida:
+            archivo_salida = "output.mp4"
+        codec = input("Ingrese el codec de video (libx264): ")
+        if not codec:
+            codec = "libx264"
+        calidad = input("Ingrese la calidad de video (alta): ")
+        if not calidad:
+            calidad = "alta"
+        tasa_bits_video = input("Ingrese la tasa de bits de video (5000): ")
+        if not tasa_bits_video:
+            tasa_bits_video = 5000
+        else:
+            tasa_bits_video = int(tasa_bits_video)
         audio = input("¿Incluir audio? (s/n): ").lower()
-        while audio not in ["s", "n"]:
+        while audio not in ["s", "n", ""]:
             audio = input("La opción debe ser s o n. ¿Incluir audio? (s/n): ").lower()
-        audio = audio == "s"
+        if audio == "":
+            audio = False
+        else:
+            audio = audio == "s"
         if audio:
-            codec_audio = input("Ingrese el codec de audio (por ejemplo, aac): ")
-            while not codec_audio:
-                codec_audio = input("El codec de audio no puede estar vacío. Ingrese el codec de audio (por ejemplo, aac): ")
-            tasa_bits_audio = int(input("Ingrese la tasa de bits de audio (por ejemplo, 256): "))
-            while tasa_bits_audio <= 0:
-                tasa_bits_audio = int(input("La tasa de bits de audio debe ser un número positivo. Ingrese la tasa de bits de audio (por ejemplo, 256): "))
+            codec_audio = input("Ingrese el codec de audio (aac): ")
+            if not codec_audio:
+                codec_audio = "aac"
+            tasa_bits_audio = input("Ingrese la tasa de bits de audio (256): ")
+            if not tasa_bits_audio:
+                tasa_bits_audio = 256
+            else:
+                tasa_bits_audio = int(tasa_bits_audio)
         else:
             codec_audio = "aac"
             tasa_bits_audio = 256
+        microfono = input("¿Incluir microfono? (s/n): ").lower()
+        while microfono not in ["s", "n", ""]:
+            microfono = input("La opción debe ser s o n. ¿Incluir microfono? (s/n): ").lower()
+        if microfono == "":
+            microfono = False
+        else:
+            microfono = microfono == "s"
+        if microfono:
+            codec_microfono = input("Ingrese el codec de microfono (aac): ")
+            if not codec_microfono:
+                codec_microfono = "aac"
+            tasa_bits_microfono = input("Ingrese la tasa de bits de microfono (256): ")
+            if not tasa_bits_microfono:
+                tasa_bits_microfono = 256
+            else:
+                tasa_bits_microfono = int(tasa_bits_microfono)
+        else:
+            codec_microfono = "aac"
+            tasa_bits_microfono = 256
 
     elif opcion == "2":
         # Configuración automática
         print("\nConfiguración automática:")
         print("---------------------------")
-        resolucion = get_monitor_resolution()
         framerate = 60
         archivo_salida = "output.mp4"
         codec = "libx264"
@@ -158,6 +220,16 @@ def main():
         else:
             codec_audio = "aac"
             tasa_bits_audio = 256
+        microfono = input("¿Incluir microfono? (s/n): ").lower()
+        while microfono not in ["s", "n"]:
+            microfono = input("La opción debe ser s o n. ¿Incluir microfono? (s/n): ").lower()
+        microfono = microfono == "s"
+        if microfono:
+            codec_microfono = "aac"
+            tasa_bits_microfono = 256
+        else:
+            codec_microfono = "aac"
+            tasa_bits_microfono = 256
 
     elif opcion == "3":
         # Importar configuración desde archivo
@@ -166,15 +238,17 @@ def main():
         filename = input("Ingrese el nombre del archivo de configuración: ")
         config = load_config(filename)
         if config:
-            resolucion = config["Resolución"]
             framerate = int(config["Tasa de frames"])
             archivo_salida = config["Archivo de salida"]
-            audio = config["Incluir audio"] == "Sí"
             codec = config["Codec de video"]
             calidad = config["Calidad de video"]
             tasa_bits_video = int(config["Tasa de bits de video"])
+            audio = config["Incluir audio"] == "Sí"
             codec_audio = config["Codec de audio"]
             tasa_bits_audio = int(config["Tasa de bits de audio"])
+            microfono = config["Incluir microfono"] == "Sí"
+            codec_microfono = config["Codec de microfono"]
+            tasa_bits_microfono = int(config["Tasa de bits de microfono"])
         else:
             print("No se pudo cargar la configuración.")
             return
@@ -189,17 +263,20 @@ def main():
         "Tasa de frames": str(framerate),
         "Archivo de salida": archivo_salida,
         "Incluir audio": "Sí" if audio else "No",
+        "Incluir microfono": "Sí" if microfono else "No",
         "Codec de video": codec,
         "Calidad de video": calidad,
         "Tasa de bits de video": str(tasa_bits_video),
         "Tasa de bits de audio": str(tasa_bits_audio),
-        "Codec de audio": codec_audio
+        "Tasa de bits de microfono": str(tasa_bits_microfono),
+        "Codec de audio": codec_audio,
+        "Codec de microfono": codec_microfono
     }, "config.txt")
 
     print("\nListo para grabar. Presione Ctrl+C para detener.")
     input("Presione Enter para comenzar la grabación...")
 
-    grabar_pantalla(resolucion, framerate, archivo_salida, audio, codec, calidad, tasa_bits_video, tasa_bits_audio, codec_audio)
+    grabar_pantalla(resolucion, framerate, archivo_salida, audio, microfono, codec, calidad, tasa_bits_video, tasa_bits_audio, tasa_bits_microfono, codec_audio, codec_microfono, server_type)
 
 if __name__ == "__main__":
     main()

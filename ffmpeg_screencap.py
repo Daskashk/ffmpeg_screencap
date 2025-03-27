@@ -59,10 +59,8 @@ def grabar_pantalla(
             comando = f"ffmpeg -f wayland -framerate {framerate} -video_size {resolucion} -i wayland"
 
         if audio or microfono:
-            # if subprocess.run(["which", "pipewire"], stdout=subprocess.DEVNULL).returncode == 0:
             if check_path("pipewire"):
                 comando += f" -f pipewire-0 -i default"
-            # elif subprocess.run(["which", "pulseaudio"], stdout=subprocess.DEVNULL).returncode == 0:
             elif check_path("pulseaudio"):
                 comando += f" -f pulse -i default"
             else:
@@ -115,11 +113,11 @@ def get_monitor_resolution(server_type):
                 resolution = line.split()[0]
                 return resolution
     elif server_type == "wayland":
-        output = subprocess.check_output(["wlr-randr", "--list-monitors"])
+        output = subprocess.check_output(["wlr-randr"])
         lines = output.decode("utf-8").splitlines()
         for line in lines:
-            if "current_mode" in line:
-                resolution = line.split()[5]
+            if "current" in line:
+                resolution = line.split()[0]
                 return resolution
     return None
 

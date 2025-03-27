@@ -69,7 +69,7 @@ Los parámetros por defecto son los siguientes:
 
 
  Este script fue creado principalmente con Inteligencia Artificial (IA) y revisado por mí. Utiliza Python como lenguaje de programación y ffmpeg como herramienta de grabación de pantalla. 
- El script fue creado y probado en un sistema Debian 12 con ffmpeg versión 5.1 y Python 3.11. Está pensado para funcionar en GNU/Linux Window ni MacOS por ahora, no puedo garantizar que funcione en BSD pero reuiniendo las condiciones debería funcionar. 
+ El script fue creado y probado en un sistema Debian 12 con ffmpeg versión 5.1 y Python 3.11. Está pensado para funcionar en GNU/Linux, no tiene soporte para Window ni MacOS por ahora, no puedo garantizar que funcione en BSD pero reuniendo las condiciones debería funcionar. 
  Este es un script que creé para mi originalmente. No puedo garantizar que funcione en otros entornos, no tengo planes de probarlo más allá de mi entorno. Pero culaquier problema pueden abrir un issue y trataré de arreglarlo tan rápido como pueda.  
 
 ## Créditos

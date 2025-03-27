@@ -12,9 +12,10 @@ Para utilizar este script, debes:
 - Instalar ffmpeg en tu sistema.
 - Tener instalado python
 - Copiar el archivo ffmpeg_screencap.py en un directorio y hacerlo ejecutable.
+- Se requieren xrandr en X11 y wlr-randr en Wayland para detectar el servidor y la resolución.
 
 ## Uso
-Para utilizar el script, simplemente ejecuta el comando `python ffmpeg_screencap.py` en la terminal. El script te pedirá que selecciones algunas opciones de configuración, como la resolución, framerate, archivo de salida, codec, calidad, tasa de bits de video y audio, etc.
+Para utilizar el script, simplemente ejecuta el comando `python3 ffmpeg_screencap.py` en la terminal. El script te pedirá que selecciones algunas opciones de configuración, como la resolución, framerate, archivo de salida, codec, calidad, tasa de bits de video y audio, etc.
 
 Los parámetros por defecto son los siguientes:
 
@@ -24,7 +25,8 @@ Los parámetros por defecto son los siguientes:
   -  Codec: "libx264"
   -  Calidad: "alta"
   -  Tasa de bits de video: 5000 kbps
-  -  Audio: True
+  -  Audio: No
+  -  Micrófono: No
   -  Codec de audio: "aac"
   -  Tasa de bits de audio: 256 kbps
 
@@ -35,7 +37,7 @@ Los parámetros por defecto son los siguientes:
 
    - Ubuntu/Debian: `apt install ffmpeg`
    - Fedora/CentOS: `dnf install ffmpeg`
-   - Arch Linux: `pacman -S ffmpeg`
+   - Arch/Manjaro: `pacman -S ffmpeg`
    - OpenSUSE: `zypper install ffmpeg`
    - Gentoo: `emerge ffmpeg`
    - Void Linux: `xbps-install -S ffmpeg`
@@ -55,22 +57,20 @@ Los parámetros por defecto son los siguientes:
 
  Si tu distribución no está incluida en la lista, puedes intentar buscar en la documentación de tu distribución o en los foros de soporte para obtener instrucciones específicas para instalar ffmpeg.
 
- El script te permite configurar la resolución, tasa de frames, codec de video y audio, y más. Puedes seleccionar entre una configuración personalizada o automática.
-Parámetros
-
 ##Troubleshooting
  Si encuentras algún problema al utilizar el script, aquí te presento algunas soluciones comunes:
 
  *  Error de instalación de ffmpeg: asegúrate de que ffmpeg esté instalado correctamente en tu sistema. Puedes verificar esto ejecutando el comando ffmpeg -version en la terminal.
- *   Error de ejecución del script: asegúrate de que el script esté ejecutándose con los permisos correctos y que no haya errores de sintaxis en el código.
- *   Problemas de audio o video: asegúrate de que el audio y video estén configurados correctamente en el script. Puedes verificar esto ejecutando el comando ffmpeg -i input.mp4 -c:v libx264 -c:a aac output.mp4 en la terminal.
- *   Mi grabación no tiene audio: asegúrate de que el audio esté habilitado en el script y que el codec de audio esté configurado correctamente.
- *   Mi grabación está distorsionada: asegúrate de que la resolución y framerate estén configurados correctamente en el script.
+ *  Error de ejecución del script: asegúrate de que el script esté ejecutándose con los permisos correctos y que no haya errores de sintaxis en el código.
+ *  Problemas de audio o video: asegúrate de que el audio y video estén configurados correctamente en el script. Puedes verificar esto ejecutando el comando ffmpeg -i input.mp4 -c:v libx264 -c:a aac output.mp4 en la terminal.
+ *  Mi grabación no tiene audio: asegúrate de que el audio esté habilitado en el script y que el codec de audio esté configurado correctamente.
+ *  Mi grabación está distorsionada: asegúrate de que la resolución y framerate estén configurados correctamente en el script.
+ *  Recuerda que necesitas xrandr en X11 y wlr-randr en Wayland, asegurate de que esten instalados y funcionen. 
 
 
- Este script fue creado principalmente con la ayuda de Inteligencia Artificial (IA). Utiliza Python como lenguaje de programación y ffmpeg como herramienta de grabación de pantalla. 
- El script fue creado y probado en un sistema Debian 12 con ffmpeg versión 5.1 y Python 3.11. Está pensado para funcionar en x11, por lo q no hay soporte para Wayland, Window ni MacOS por ahora. 
- Este es un script que creé para mi originalmente. No puedo garantizar que funcione en otros entornos. 
+ Este script fue creado principalmente con Inteligencia Artificial (IA) y revisado por mí. Utiliza Python como lenguaje de programación y ffmpeg como herramienta de grabación de pantalla. 
+ El script fue creado y probado en un sistema Debian 12 con ffmpeg versión 5.1 y Python 3.11. Está pensado para funcionar en GNU/Linux Window ni MacOS por ahora, no puedo garantizar que funcione en BSD pero reuiniendo las condiciones debería funcionar. 
+ Este es un script que creé para mi originalmente. No puedo garantizar que funcione en otros entornos, no tengo planes de probarlo más allá de mi entorno. Pero culaquier problema pueden abrir un issue y trataré de arreglarlo tan rápido como pueda.  
 
 ## Créditos
 Este script utiliza [ffmpeg](https://ffmpeg.org/), una herramienta de código abierto para grabar y procesar video. Muchas gracias a los desarrolladores de ffmpeg por su excelente trabajo.
